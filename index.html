@@ -22,10 +22,12 @@
   --r:10px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--text)}
+html{width:100%;font-family:'DM Sans',sans-serif;color:var(--text);scroll-behavior:smooth}
+body{width:100%;font-family:'DM Sans',sans-serif;color:var(--text)}
 
 /* ── MAP ── */
-#map{position:fixed;inset:0;z-index:0;width:100%;height:100%}
+#map-section{position:relative;width:100%;height:100vh}
+#map{position:absolute;inset:0;z-index:0;width:100%;height:100%}
 body.pin-mode #map{cursor:crosshair}
 
 /* ── STRIPE ── */
@@ -368,6 +370,147 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 @media(max-width:560px){
   #live-cam{width:calc(100vw - 40px);left:20px;right:20px;bottom:78px}
 }
+
+/* ── SCROLL DOWN HINT ── */
+#scroll-hint{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  z-index:195;display:flex;flex-direction:column;align-items:center;gap:5px;
+  pointer-events:none;
+  animation:sh-show 1s ease 2s both, sh-hide 1s ease 6s both;
+}
+@keyframes sh-show{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes sh-hide{from{opacity:1}to{opacity:0;pointer-events:none}}
+.sh-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.16em;
+  text-transform:uppercase;color:rgba(243,236,224,0.45);text-shadow:0 1px 4px rgba(0,0,0,0.6)}
+.sh-chevron{width:16px;height:16px;border-right:1.5px solid rgba(243,236,224,0.3);
+  border-bottom:1.5px solid rgba(243,236,224,0.3);transform:rotate(45deg);
+  animation:sh-bob 1.4s ease-in-out infinite}
+@keyframes sh-bob{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(4px)}}
+
+/* ── ILLUSTRATION SECTION ── */
+#illustration-section{
+  position:relative;
+  background:#0b0f11;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:90px 32px 72px;
+  overflow:hidden;
+}
+.il-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.il-blob{position:absolute;border-radius:50%;filter:blur(100px)}
+.il-b1{width:650px;height:420px;top:-8%;left:-10%;
+  background:radial-gradient(ellipse,rgba(157,195,204,0.09),transparent 70%)}
+.il-b2{width:550px;height:380px;bottom:-5%;right:-8%;
+  background:radial-gradient(ellipse,rgba(196,154,82,0.06),transparent 70%)}
+
+.il-header{position:relative;z-index:2;text-align:center;margin-bottom:44px}
+.il-eyebrow{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.22em;
+  text-transform:uppercase;color:rgba(157,195,204,0.55);margin-bottom:10px}
+.il-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.7rem,3.5vw,2.8rem);
+  font-weight:300;color:rgba(243,236,224,0.9);line-height:1.1;margin-bottom:10px}
+.il-title em{font-style:italic;color:#9dc3cc}
+.il-subtitle{font-family:'DM Sans',sans-serif;font-size:12px;
+  color:rgba(200,215,218,0.4);letter-spacing:0.04em;line-height:1.7}
+.il-sep{display:flex;align-items:center;gap:14px;margin-top:14px;justify-content:center;opacity:0.3}
+.il-sep::before,.il-sep::after{content:'';width:50px;height:0.5px;
+  background:linear-gradient(to right,transparent,rgba(157,195,204,1),transparent)}
+.il-sep span{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.16em;
+  color:rgba(157,195,204,1);text-transform:uppercase}
+
+/* Stage: the painting + hotspots */
+.il-stage{
+  position:relative;z-index:2;width:100%;max-width:960px;
+  border-radius:3px;overflow:visible;
+}
+.il-stage > img{
+  display:block;width:100%;height:auto;border-radius:3px;
+  filter:saturate(0.9) contrast(0.96);
+  box-shadow:0 28px 90px rgba(0,0,0,0.65);
+  transition:filter 0.5s ease;
+}
+.il-stage.any-active > img{filter:saturate(0.65) contrast(0.85) brightness(0.75)}
+
+/* Hotspot dot + ring */
+.hs{
+  position:absolute;width:32px;height:32px;
+  transform:translate(-50%,-50%);cursor:default;z-index:10;
+}
+.hs-ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:1.5px solid rgba(196,154,82,0.75);
+  animation:ring-pulse 2.4s ease-in-out infinite;
+}
+.hs-ring2{
+  position:absolute;inset:5px;border-radius:50%;
+  border:1px solid rgba(196,154,82,0.35);
+  animation:ring-pulse 2.4s ease-in-out infinite 0.4s;
+}
+@keyframes ring-pulse{0%,100%{transform:scale(1);opacity:0.9}60%{transform:scale(1.4);opacity:0}}
+.hs-dot{
+  position:absolute;width:8px;height:8px;border-radius:50%;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(196,154,82,0.95);
+  box-shadow:0 0 10px rgba(196,154,82,0.5),0 0 24px rgba(196,154,82,0.2);
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.hs:hover .hs-dot,.hs.active .hs-dot{
+  transform:translate(-50%,-50%) scale(1.6);
+  box-shadow:0 0 16px rgba(196,154,82,0.8),0 0 36px rgba(196,154,82,0.35);
+}
+
+/* Tooltip card */
+.hs-tip{
+  position:absolute;width:210px;
+  pointer-events:none;
+  opacity:0;transform:scale(0.95);
+  transition:opacity 0.2s,transform 0.22s;
+  z-index:30;
+}
+.hs.active .hs-tip{opacity:1;transform:scale(1)}
+
+/* direction helpers */
+.tip-right{left:calc(100% + 16px);top:50%;margin-top:-70px}
+.tip-left{right:calc(100% + 16px);top:50%;margin-top:-70px}
+.tip-below{top:calc(100% + 16px);left:50%;transform:translateX(-50%) scale(0.95)}
+.hs.active .tip-below{transform:translateX(-50%) scale(1)}
+.tip-above{bottom:calc(100% + 16px);left:50%;transform:translateX(-50%) scale(0.95)}
+.hs.active .tip-above{transform:translateX(-50%) scale(1)}
+
+.hs-tip-box{
+  background:rgba(8,14,17,0.97);
+  border:0.5px solid rgba(157,195,204,0.2);
+  border-radius:10px;
+  padding:14px 15px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.55);
+}
+.tip-tag{
+  font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;margin-bottom:7px;display:inline-block;
+  padding:2px 8px;border-radius:3px;
+}
+.tag-feature{background:rgba(196,154,82,0.15);color:rgba(196,154,82,0.9);
+  border:0.5px solid rgba(196,154,82,0.3)}
+.tag-species-cr{background:rgba(176,112,64,0.18);color:#f0c878;
+  border:0.5px solid rgba(196,154,82,0.35)}
+.tag-species-lc{background:rgba(110,150,95,0.18);color:#a8d48a;
+  border:0.5px solid rgba(110,150,95,0.3)}
+.tip-name{font-family:'Cormorant Garamond',serif;font-size:16px;
+  color:rgba(243,236,224,0.95);line-height:1.2;margin-bottom:3px}
+.tip-name em{font-style:italic;color:#9dc3cc}
+.tip-sci{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;
+  color:rgba(200,215,218,0.4);margin-bottom:8px}
+.tip-desc{font-family:'DM Sans',sans-serif;font-size:11px;
+  color:rgba(200,215,218,0.68);line-height:1.65}
+.tip-desc strong{color:rgba(243,236,224,0.88);font-weight:500}
+
+/* caption below painting */
+.il-caption{
+  position:relative;z-index:2;
+  margin-top:28px;text-align:center;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:13px;color:rgba(200,215,218,0.3);line-height:1.7;
+  max-width:700px;
+}
 </style>
 </head>
 <body>
@@ -389,7 +532,14 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 </nav>
 
 <!-- ══ FULL-SCREEN MAP ══ -->
+<div id="map-section">
 <div id="map"></div>
+<!-- scroll hint fades in then out automatically -->
+<div id="scroll-hint">
+  <span class="sh-label">Scroll to explore</span>
+  <div class="sh-chevron"></div>
+</div>
+</div>
 
 <!-- ══ FAKE LIVE STREAM — Island No.5 Nest Cam ══ -->
 <div id="live-cam">
@@ -957,5 +1107,178 @@ function submitSighting(){
 }
 document.getElementById('f-datetime').value=new Date().toISOString().slice(0,16);
 </script>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 2 — Scientific Illustration
+     Interactive hover hotspots: hover = tooltip
+══════════════════════════════════════════════════ -->
+<section id="illustration-section">
+  <div class="il-bg">
+    <div class="il-blob il-b1"></div>
+    <div class="il-blob il-b2"></div>
+  </div>
+
+  <div class="il-header">
+    <p class="il-eyebrow">Field Identification · 野外识别</p>
+    <h2 class="il-title">Two Species, <em>One Fate</em></h2>
+    <p class="il-subtitle">
+      Hover over the illustration to reveal field marks<br>
+      and distinguish the Critically Endangered from its common relative
+    </p>
+    <div class="il-sep"><span>·</span></div>
+  </div>
+
+  <!-- ── THE PAINTING with interactive hotspots ── -->
+  <div class="il-stage" id="il-stage">
+    <img src="scientific_illustration_2-detail.jpg"
+         alt="Watercolour illustration of Chinese Crested Tern and Greater Crested Tern"
+         draggable="false"/>
+
+    <!--
+      HOTSPOT POSITIONS (% of image width/height):
+      Derived from the annotated reference image positions.
+      Each .hs has left/top in % of the parent .il-stage.
+    -->
+
+    <!-- 1. Chinese Crested Tern — main bird label (bottom-left area) -->
+    <div class="hs" id="hs-cct" style="left:28%;top:82%" tabindex="0">
+      <div class="hs-ring"></div>
+      <div class="hs-ring2"></div>
+      <div class="hs-dot"></div>
+      <div class="hs-tip tip-right" style="width:230px;margin-top:-90px">
+        <div class="hs-tip-box">
+          <span class="tip-tag tag-species-cr">CR · Critically Endangered</span>
+          <div class="tip-name">Chinese Crested Tern</div>
+          <div class="tip-sci">Thalasseus bernsteini</div>
+          <div class="tip-desc">Slightly <strong>smaller and slimmer</strong> than its relative. Fewer than <strong>50 individuals</strong> remain in the wild — one of the rarest seabirds on Earth.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. CCT Bill — yellow with distinct black tip -->
+    <div class="hs" id="hs-bill-cct" style="left:14%;top:31%" tabindex="0">
+      <div class="hs-ring"></div>
+      <div class="hs-ring2"></div>
+      <div class="hs-dot"></div>
+      <div class="hs-tip tip-right" style="width:215px;margin-top:-60px">
+        <div class="hs-tip-box">
+          <span class="tip-tag tag-feature">Key Field Mark</span>
+          <div class="tip-name">Bill — Black Tip</div>
+          <div class="tip-desc"><strong>Yellow with a distinct black tip.</strong> This is the most reliable way to separate the Chinese Crested Tern from the Greater Crested Tern at a distance.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. CCT Shaggy Crest -->
+    <div class="hs" id="hs-crest" style="left:46%;top:16%" tabindex="0">
+      <div class="hs-ring"></div>
+      <div class="hs-ring2"></div>
+      <div class="hs-dot"></div>
+      <div class="hs-tip tip-below" style="width:210px">
+        <div class="hs-tip-box">
+          <span class="tip-tag tag-feature">Plumage</span>
+          <div class="tip-name">Shaggy Crest</div>
+          <div class="tip-desc">A <strong>wild, shaggy black crest</strong> that flares outward — longer and more dishevelled than the Greater Crested Tern's neater cap.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. CCT Pale Mantle -->
+    <div class="hs" id="hs-mantle-cct" style="left:38%;top:62%" tabindex="0">
+      <div class="hs-ring"></div>
+      <div class="hs-ring2"></div>
+      <div class="hs-dot"></div>
+      <div class="hs-tip tip-right" style="width:210px;margin-top:-65px">
+        <div class="hs-tip-box">
+          <span class="tip-tag tag-feature">Plumage</span>
+          <div class="tip-name">Pale Mantle</div>
+          <div class="tip-desc">The back and wing coverts show a <strong>very pale, almost white</strong> grey — noticeably lighter than the slate-grey of the Greater Crested Tern behind it.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Greater Crested Tern — species label (top-right) -->
+    <div class="hs" id="hs-gct" style="left:80%;top:28%" tabindex="0">
+      <div class="hs-ring"></div>
+      <div class="hs-ring2"></div>
+      <div class="hs-dot"></div>
+      <div class="hs-tip tip-left" style="width:230px;margin-top:-80px">
+        <div class="hs-tip-box">
+          <span class="tip-tag tag-species-lc">LC · Least Concern</span>
+          <div class="tip-name">Greater Crested Tern</div>
+          <div class="tip-sci">Thalasseus bergii</div>
+          <div class="tip-desc"><strong>Larger and bulkier</strong> — the most common relative. Often nests alongside the Chinese Crested Tern, making accurate field identification critical for conservation monitoring.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. GCT Bill — solid greenish-yellow, no black tip -->
+    <div class="hs" id="hs-bill-gct" style="left:88%;top:20%" tabindex="0">
+      <div class="hs-ring"></div>
+      <div class="hs-ring2"></div>
+      <div class="hs-dot"></div>
+      <div class="hs-tip tip-left" style="width:215px;margin-top:-55px">
+        <div class="hs-tip-box">
+          <span class="tip-tag tag-feature">Key Field Mark</span>
+          <div class="tip-name">Bill — No Black Tip</div>
+          <div class="tip-desc"><strong>Solid greenish-yellow, no black tip.</strong> This distinguishes the Greater Crested Tern from the rare Chinese Crested Tern at any range.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. GCT Darker Mantle -->
+    <div class="hs" id="hs-mantle-gct" style="left:72%;top:48%" tabindex="0">
+      <div class="hs-ring"></div>
+      <div class="hs-ring2"></div>
+      <div class="hs-dot"></div>
+      <div class="hs-tip tip-left" style="width:215px;margin-top:-55px">
+        <div class="hs-tip-box">
+          <span class="tip-tag tag-feature">Plumage</span>
+          <div class="tip-name">Slate-Grey Mantle</div>
+          <div class="tip-desc"><strong>Darker, slate-grey mantle</strong> — clearly deeper in tone than the Chinese Crested Tern's pale back visible in the foreground.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.il-stage -->
+
+  <p class="il-caption">
+    Watercolour illustration · <em>Thalasseus bernsteini</em> (foreground) &amp; <em>Thalasseus bergii</em> (background)<br>
+    Hover over the golden markers to reveal identification notes
+  </p>
+</section>
+
+<script>
+/* ── Illustration hotspot hover / focus interaction ── */
+(function(){
+  const stage = document.getElementById('il-stage');
+  if(!stage) return;
+  const hotspots = stage.querySelectorAll('.hs');
+
+  function activate(hs){
+    hotspots.forEach(h => h.classList.remove('active'));
+    hs.classList.add('active');
+    stage.classList.add('any-active');
+  }
+  function deactivateAll(){
+    hotspots.forEach(h => h.classList.remove('active'));
+    stage.classList.remove('any-active');
+  }
+
+  hotspots.forEach(hs => {
+    hs.addEventListener('mouseenter', () => activate(hs));
+    hs.addEventListener('mouseleave', () => deactivateAll());
+    hs.addEventListener('focus',      () => activate(hs));
+    hs.addEventListener('blur',       () => deactivateAll());
+    // touch support
+    hs.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if(hs.classList.contains('active')){ deactivateAll(); }
+      else { activate(hs); }
+    }, {passive:false});
+  });
+})();
+</script>
+
 </body>
 </html>
