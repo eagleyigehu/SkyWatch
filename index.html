@@ -55,12 +55,17 @@ body.pin-mode #map{cursor:crosshair}
 .logo-tag{font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:3px}
 
 /* ── DOCK ── */
-#dock{position:fixed;bottom:28px;left:20px;z-index:180;display:flex;flex-direction:column;gap:8px}
-.dock-btn{width:44px;height:44px;border-radius:50%;background:var(--panel);border:1px solid var(--border);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;position:relative}
-.dock-btn:hover{background:rgba(157,195,204,0.3);border-color:var(--sky);transform:scale(1.08)}
-.dock-btn.active{background:rgba(157,195,204,0.4);border-color:var(--accent)}
-.dock-btn svg{width:20px;height:20px;stroke:var(--deep);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.dock-tooltip{position:absolute;left:52px;top:50%;transform:translateY(-50%);background:var(--deep);color:#fff;font-size:11px;padding:4px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s}
+/* dock removed from fixed map layer — now lives in illustration section */
+#dock{
+  display:flex;flex-direction:row;gap:10px;
+  justify-content:center;flex-wrap:wrap;
+  margin-top:28px;position:relative;z-index:2;
+}
+.dock-btn{width:44px;height:44px;border-radius:50%;background:rgba(14,18,22,0.7);border:1px solid rgba(157,195,204,0.2);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;position:relative}
+.dock-btn:hover{background:rgba(157,195,204,0.18);border-color:var(--sky);transform:scale(1.08)}
+.dock-btn.active{background:rgba(157,195,204,0.28);border-color:var(--accent)}
+.dock-btn svg{width:20px;height:20px;stroke:rgba(200,215,218,0.75);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dock-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(8,14,17,0.97);color:rgba(243,236,224,0.9);font-size:11px;padding:5px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;border:0.5px solid rgba(157,195,204,0.2)}
 .dock-btn:hover .dock-tooltip{opacity:1}
 
 /* ── RIGHT PANEL ── */
@@ -241,7 +246,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
    (mimics the Melbourne 367 Collins St peregrine cam)
 ══════════════════════════════════════════════════════ */
 #live-cam{
-  position:fixed;left:20px;bottom:84px;z-index:185;
+  position:fixed;left:20px;bottom:8px;z-index:185;
   width:300px;
   background:rgba(20,24,26,0.92);
   border:1px solid rgba(196,154,82,0.3);
@@ -368,19 +373,20 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 .lc-cam-dot.active{background:rgba(157,195,204,0.32);border-color:var(--accent);color:#f3ece0}
 
 @media(max-width:560px){
-  #live-cam{width:calc(100vw - 40px);left:20px;right:20px;bottom:78px}
+  #live-cam{width:calc(100vw - 40px);left:20px;right:20px;bottom:8px}
 }
 
 /* ── SCROLL DOWN HINT ── */
 #go-down{
   position:fixed;bottom:26px;left:50%;transform:translateX(-50%);
-  z-index:195;
+  z-index:9990; /* above Mapbox controls which are z-index ~2 */
   display:flex;flex-direction:column;align-items:center;gap:7px;
   cursor:pointer;border:none;background:none;padding:8px 18px;
   animation:gd-in 1s ease 2.2s both;
-  transition:opacity 0.3s;
+  transition:opacity 0.35s, visibility 0.35s;
 }
-#go-down.hidden{opacity:0;pointer-events:none}
+/* hide when scrolled past map — managed by scroll listener, not .hidden class */
+#go-down.map-gone{opacity:0;pointer-events:none;visibility:hidden}
 @keyframes gd-in{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 .gd-label{
   font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.18em;
@@ -532,8 +538,20 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
   font-size:13px;color:rgba(200,215,218,0.3);line-height:1.7;
   max-width:700px;
 }
+/* Chinese annotation — small muted text after English primary */
+.zh{
+  font-size:0.8em;opacity:0.45;letter-spacing:0.06em;
+  font-family:'Noto Serif SC','DM Sans',sans-serif;
+  font-weight:400;font-style:normal;
+  margin-left:0.35em;
+}
+/* Block-level zh annotation on its own line */
+.zh-block{
+  display:block;font-size:0.78em;opacity:0.38;letter-spacing:0.08em;
+  font-family:'Noto Serif SC','DM Sans',sans-serif;
+  font-weight:400;margin-top:0.15em;font-style:normal;
+}
 </style>
-</head>
 <body>
 
 <div class="stripe"></div>
@@ -541,14 +559,14 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <!-- ══ GLOBAL NAV — package wrapper ══ -->
 <nav id="global-nav">
   <a href="index.html" class="gn-brand">
-    <span class="gn-mark">🕊</span>
     <span class="gn-title">The Mythical <em>Bird</em></span>
-    <span class="gn-zh">神话鸟</span>
+    <span class="gn-zh">神话之鸟</span>
   </a>
   <div class="gn-links">
-    <a href="index.html" class="gn-link active"><span class="gn-dot"></span>Live Map</a>
-    <a href="#" class="gn-link live-link" onclick="document.getElementById('live-cam').classList.remove('collapsed');return false;"><span class="gn-dot"></span>Nest Cam</a>
-    <a href="project-00.html" class="gn-link">Visual Novel</a>
+    <a href="index.html" class="gn-link active"><span class="gn-dot"></span>Live Map <span class="zh">实时地图</span></a>
+    <a href="#" class="gn-link live-link" onclick="document.getElementById('live-cam').classList.remove('collapsed');return false;"><span class="gn-dot"></span>Nest Cam <span class="zh">巢穴直播</span></a>
+    <a href="#illustration-section" class="gn-link" onclick="document.getElementById('illustration-section').scrollIntoView({behavior:'smooth'});return false;">Illustration <span class="zh">科学插画</span></a>
+    <a href="#novel-section" class="gn-link" onclick="document.getElementById('novel-section').scrollIntoView({behavior:'smooth'});return false;">Visual Novel <span class="zh">视觉小说</span></a>
   </div>
 </nav>
 
@@ -557,9 +575,9 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <div id="map"></div>
 </div>
 
-<!-- clickable jump button — avoids Mapbox scroll conflict entirely -->
-<button id="go-down" onclick="document.getElementById('illustration-section').scrollIntoView({behavior:'smooth'});this.classList.add('hidden')" aria-label="View field illustration">
-  <span class="gd-label">Field Illustration ↓</span>
+<!-- clickable jump button — z-index:9990 stays above Mapbox, always clickable -->
+<button id="go-down" onclick="document.getElementById('illustration-section').scrollIntoView({behavior:'smooth'})" aria-label="Explore more">
+  <span class="gd-label">Explore more <span class="zh" style="opacity:0.35">点击探索</span></span>
   <div class="gd-ring"><div class="gd-arrow"></div></div>
 </button>
 
@@ -594,7 +612,7 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
       </div>
       <span class="lc-species"><em>T. bernsteini</em></span>
     </div>
-    <p class="lc-caption">Live feed from the Zhoushan breeding colony. One of fewer than 50 Chinese Crested Terns left on Earth.</p>
+    <p class="lc-caption">Live feed from the Zhoushan breeding colony. ~200 individuals remain on Earth.<span class="zh-block">舟山繁殖地实时直播 · 全球仅约200只存世</span></p>
     <div class="lc-actions">
       <a href="project-00.html" class="lc-watch">Enter the story →</a>
       <div class="lc-cams">
@@ -608,10 +626,10 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <!-- ══ BANNER ══ -->
 <div id="alert-banner">
   <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
-    <span class="alert-pill">CR · ~50 left</span>
-    <span class="alert-copy"><strong>Why this platform exists:</strong> The <em>Chinese Crested Tern</em> is critically endangered — its rocky-islet nesting sites are lost to coastal development. SkyWatch uses GIS to find where <strong>artificial floating platforms</strong> can replace that habitat.</span>
+    <span class="alert-pill">CR · ~200 left</span>
+    <span class="alert-copy"><strong>Why this platform exists:</strong> The <em>Chinese Crested Tern</em> is critically endangered — its rocky-islet nesting sites are lost to coastal development. SkyWatch uses GIS to find where <strong>artificial floating platforms</strong> can replace that habitat. <span class="zh">中华凤头燕鸥极度濒危，SkyWatch 利用 GIS 寻找人工漂浮平台替代栖息地</span></span>
   </div>
-  <span class="alert-goal">Goal: locate floating habitat sites</span>
+  <span class="alert-goal">Goal: locate floating habitat sites <span class="zh">定位漂浮栖息地</span></span>
 </div>
 
 <!-- ══ LOGO ══ -->
@@ -622,66 +640,39 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
   </div>
 </div>
 
-<!-- ══ DOCK ══ -->
-<div id="dock">
-  <div class="dock-btn" id="btn-painting" onclick="togglePop('pop-painting')">
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 17l4-4 4 4 4-5 4 5"/></svg>
-    <span class="dock-tooltip">Watercolour illustration</span>
-  </div>
-  <div class="dock-btn" id="btn-species" onclick="togglePop('pop-species')">
-    <svg viewBox="0 0 24 24"><path d="M2 12c0 0 3-4 7-4c2 0 3 1 5 1c2 0 4-2 6-1c-1 2-3 4-5 4c-2 0-3-1-5-1c-2 0-4 2-4 2z"/><path d="M9 8c0-2 1-4 3-4s3 2 3 4"/></svg>
-    <span class="dock-tooltip">Species profile</span>
-  </div>
-  <div class="dock-btn" id="btn-mca" onclick="togglePop('pop-mca')">
-    <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2.5" fill="white" stroke-width="1.6"/><circle cx="15" cy="12" r="2.5" fill="white" stroke-width="1.6"/><circle cx="10" cy="18" r="2.5" fill="white" stroke-width="1.6"/></svg>
-    <span class="dock-tooltip">Suitability model (MCA)</span>
-  </div>
-  <div class="dock-btn" id="btn-mangrove" onclick="togglePop('pop-mangrove')">
-    <svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 3 2 5 4 6v5h6v-5c2-1 4-3 4-6 0-4-3-7-7-7z"/></svg>
-    <span class="dock-tooltip">Mangrove loss timeline</span>
-  </div>
-  <div class="dock-btn" id="btn-platform" onclick="togglePop('pop-platform')">
-    <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="4" rx="1"/><path d="M7 10V7M12 10V6M17 10V7"/><path d="M4 14c0 2 1 4 2 4M20 14c0 2-1 4-2 4M12 14v6"/><line x1="8" y1="20" x2="16" y2="20"/></svg>
-    <span class="dock-tooltip">About floating platforms</span>
-  </div>
-  <div class="dock-btn" id="btn-layers" onclick="togglePop('pop-layers')">
-    <svg viewBox="0 0 24 24"><polygon points="12 2 22 8.5 12 15 2 8.5"/><polyline points="2 15.5 12 22 22 15.5"/><polyline points="2 12 12 18.5 22 12"/></svg>
-    <span class="dock-tooltip">Map layers</span>
-  </div>
-</div>
-
 <!-- ══ LOG SIGHTING PANEL ══ -->
 <div id="panel-sighting">
   <div class="panel-header">
     <div class="panel-header-stripe"></div>
-    <div class="panel-eyebrow">Citizen science</div>
-    <div class="panel-title">Log a <em>sighting</em></div>
+    <div class="panel-eyebrow">Citizen science <span class="zh">公民科学</span></div>
+    <div class="panel-title">Log a <em>sighting</em> <span class="zh" style="font-size:0.7em">记录目击</span></div>
   </div>
   <div class="panel-body">
     <div class="urgency-note">
-      <strong>Every record matters</strong>
-      Only ~50 Chinese Crested Terns remain. Your sighting feeds directly into the habitat suitability model.
+      <strong>Every record matters <span class="zh">每条记录都至关重要</span></strong>
+      ~200 Chinese Crested Terns remain. Your sighting feeds directly into the habitat suitability model.
+      <span class="zh-block">全球仅约200只存世，您的记录将直接输入栖息地适宜性模型</span>
     </div>
-    <button class="pin-btn" id="pin-btn" onclick="togglePin()">📍 Click map to pin location</button>
-    <div class="form-row"><label>Species</label>
+    <button class="pin-btn" id="pin-btn" onclick="togglePin()">📍 Click map to pin location <span class="zh">点击地图定位</span></button>
+    <div class="form-row"><label>Species <span class="zh">物种</span></label>
       <select id="f-species">
         <option value="">— Select species —</option>
-        <option value="cct">Chinese Crested Tern (T. bernsteini)</option>
-        <option value="gct">Greater Crested Tern (T. bergii)</option>
-        <option value="other">Other / uncertain</option>
+        <option value="cct">Chinese Crested Tern (T. bernsteini) 中华凤头燕鸥</option>
+        <option value="gct">Greater Crested Tern (T. bergii) 大凤头燕鸥</option>
+        <option value="other">Other / uncertain 其他</option>
       </select>
     </div>
-    <div class="form-row"><label>Date &amp; time</label><input type="datetime-local" id="f-datetime"/></div>
+    <div class="form-row"><label>Date &amp; time <span class="zh">日期与时间</span></label><input type="datetime-local" id="f-datetime"/></div>
     <div class="coords-row">
-      <div class="form-row"><label>Lat</label><input type="number" id="f-lat" placeholder="25.12" step="0.0001"/></div>
-      <div class="form-row"><label>Lng</label><input type="number" id="f-lng" placeholder="121.54" step="0.0001"/></div>
+      <div class="form-row"><label>Lat <span class="zh">纬度</span></label><input type="number" id="f-lat" placeholder="25.12" step="0.0001"/></div>
+      <div class="form-row"><label>Lng <span class="zh">经度</span></label><input type="number" id="f-lng" placeholder="121.54" step="0.0001"/></div>
     </div>
-    <div class="form-row"><label>Count</label><input type="number" id="f-count" placeholder="e.g. 3" min="1"/></div>
-    <div class="form-row"><label>Notes</label><textarea id="f-notes" placeholder="Behaviour, habitat, weather…"></textarea></div>
-    <div class="form-row"><label>Your name</label><input type="text" id="f-name" placeholder="e.g. Emma H."/></div>
-    <button class="submit-btn" onclick="submitSighting()">Submit sighting</button>
-    <p style="font-size:10px;color:var(--muted);margin-top:7px;line-height:1.5">Open data · CC BY 4.0 · Stored in PostGIS</p>
-    <div class="recent-divider">Recent records</div>
+    <div class="form-row"><label>Count <span class="zh">数量</span></label><input type="number" id="f-count" placeholder="e.g. 3" min="1"/></div>
+    <div class="form-row"><label>Notes <span class="zh">备注</span></label><textarea id="f-notes" placeholder="Behaviour, habitat, weather…"></textarea></div>
+    <div class="form-row"><label>Your name <span class="zh">姓名</span></label><input type="text" id="f-name" placeholder="e.g. Yige H."/></div>
+    <button class="submit-btn" onclick="submitSighting()">Submit sighting <span class="zh">提交记录</span></button>
+    <p style="font-size:10px;color:var(--muted);margin-top:7px;line-height:1.5">Open data · CC BY 4.0 · Stored in PostGIS <span class="zh">开放数据</span></p>
+    <div class="recent-divider">Recent records <span class="zh">最新记录</span></div>
     <div id="sighting-list"></div>
   </div>
 </div>
@@ -692,8 +683,8 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <div class="popover" id="pop-painting">
   <div class="popover-header">
     <div class="popover-header-stripe"></div>
-    <div class="popover-eyebrow">Illustration</div>
-    <div class="popover-title"><em>Thalasseus bernsteini</em> — watercolour</div>
+    <div class="popover-eyebrow">插画 · Illustration</div>
+    <div class="popover-title"><em>Thalasseus bernsteini</em> — 水彩 · watercolour</div>
     <button class="popover-close" onclick="closePop('pop-painting')">×</button>
   </div>
   <div class="popover-body">
@@ -714,8 +705,8 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <div class="popover" id="pop-species">
   <div class="popover-header">
     <div class="popover-header-stripe"></div>
-    <div class="popover-eyebrow">Species profile</div>
-    <div class="popover-title">The bird we are <em>protecting</em></div>
+    <div class="popover-eyebrow">物种档案 · Species profile</div>
+    <div class="popover-title">我们正在<em>保护</em>的鸟 · The bird we are <em>protecting</em></div>
     <button class="popover-close" onclick="closePop('pop-species')">×</button>
   </div>
   <div class="popover-body">
@@ -724,7 +715,7 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
       <div style="font-size:10px;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;margin-top:2px">Chinese Crested Tern</div>
       <div class="cr-pill">CR · Critically Endangered · IUCN</div>
     </div>
-    <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px">Each dot = one individual. Approximately <strong style="color:var(--deep)">~50 wild birds</strong> remain.</p>
+    <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px">Each dot = one individual. Approximately <strong style="color:var(--deep)">~200 wild birds</strong> remain. <span class="zh">约200只野生个体存世</span></p>
     <div class="pop-dots" id="sp-dots"></div>
     <div class="fact-grid">
       <div class="fact"><div class="fact-l">Wingspan</div><div class="fact-v">86–94 cm</div></div>
@@ -742,8 +733,8 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <div class="popover" id="pop-mca">
   <div class="popover-header">
     <div class="popover-header-stripe"></div>
-    <div class="popover-eyebrow">Multi-criteria analysis</div>
-    <div class="popover-title">Habitat <em>suitability</em> model</div>
+    <div class="popover-eyebrow">多准则分析 · Multi-criteria analysis</div>
+    <div class="popover-title">栖息地<em>适宜性</em>模型 · Habitat <em>suitability</em> model</div>
     <button class="popover-close" onclick="closePop('pop-mca')">×</button>
   </div>
   <div class="popover-body">
@@ -775,8 +766,8 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <div class="popover" id="pop-mangrove">
   <div class="popover-header">
     <div class="popover-header-stripe"></div>
-    <div class="popover-eyebrow">Habitat loss</div>
-    <div class="popover-title">Mangrove <em>decline</em> 1996–2020</div>
+    <div class="popover-eyebrow">栖息地丧失 · Habitat loss</div>
+    <div class="popover-title">红树林<em>减少</em>趋势 1996–2020 · Mangrove <em>decline</em></div>
     <button class="popover-close" onclick="closePop('pop-mangrove')">×</button>
   </div>
   <div class="popover-body">
@@ -790,8 +781,8 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <div class="popover" id="pop-platform">
   <div class="popover-header">
     <div class="popover-header-stripe"></div>
-    <div class="popover-eyebrow">Our goal</div>
-    <div class="popover-title">Floating habitat <em>platforms</em></div>
+    <div class="popover-eyebrow">我们的目标 · Our goal</div>
+    <div class="popover-title">漂浮栖息地<em>平台</em> · Floating habitat <em>platforms</em></div>
     <button class="popover-close" onclick="closePop('pop-platform')">×</button>
   </div>
   <div class="popover-body">
@@ -808,8 +799,8 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <div class="popover" id="pop-layers">
   <div class="popover-header">
     <div class="popover-header-stripe"></div>
-    <div class="popover-eyebrow">Map layers</div>
-    <div class="popover-title">Data <em>layers</em></div>
+    <div class="popover-eyebrow">地图图层 · Map layers</div>
+    <div class="popover-title">数据<em>图层</em> · Data <em>layers</em></div>
     <button class="popover-close" onclick="closePop('pop-layers')">×</button>
   </div>
   <div class="popover-body">
@@ -828,26 +819,26 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 
 <!-- ══ MIGRATION LEGEND (bottom-right of map) ══ -->
 <div id="migration-legend">
-  <div class="ml-title">Migration routes</div>
+  <div class="ml-title">Migration routes <span class="zh">迁徙路线</span></div>
   <div class="ml-item">
     <svg width="32" height="10"><line x1="0" y1="5" x2="32" y2="5" stroke="#7aaebb" stroke-width="2.5" stroke-dasharray="5,3"/></svg>
     <div>
-      <div class="ml-label">Spring (Mar–May)</div>
-      <div class="ml-sub">Northbound · E. Indonesia → Korea</div>
+      <div class="ml-label">Spring (Mar–May) <span class="zh">春季北迁</span></div>
+      <div class="ml-sub">Northbound · E. Indonesia → Korea <span class="zh">印尼东部→朝鲜半岛</span></div>
     </div>
   </div>
   <div class="ml-item">
     <svg width="32" height="10"><line x1="0" y1="5" x2="32" y2="5" stroke="#c49a52" stroke-width="2.5" stroke-dasharray="5,3"/></svg>
     <div>
-      <div class="ml-label">Fall (Aug–Oct)</div>
-      <div class="ml-sub">Southbound · Korea → E. Indonesia</div>
+      <div class="ml-label">Fall (Aug–Oct) <span class="zh">秋季南迁</span></div>
+      <div class="ml-sub">Southbound · Korea → E. Indonesia <span class="zh">朝鲜半岛→印尼东部</span></div>
     </div>
   </div>
 </div>
 
 <div id="cc">
   <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="license noopener"><img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY 4.0"/></a>
-  <span>SkyWatch by <a href="#">Your Name</a> — <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></span>
+  <span>SkyWatch by <a href="#">Yige Hu</a> — <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></span>
 </div>
 
 <div id="toast"></div>
@@ -860,9 +851,9 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 (function(){
   const el=document.getElementById('sp-dots');
   if(!el) return;
-  for(let i=0;i<80;i++){
+  for(let i=0;i<200;i++){
     const d=document.createElement('div');
-    d.className='pop-dot '+(i<50?'alive':'lost');
+    d.className='pop-dot '+(i<200?'alive':'lost');
     el.appendChild(d);
   }
 })();
@@ -972,7 +963,7 @@ function switchCam(el){
 /* ══ Hide map-only UI when scrolled past the map section ══ */
 (function(){
   const MAP_UI=[
-    '#alert-banner','#logo','#dock',
+    '#alert-banner','#logo',
     '#panel-sighting','#migration-legend','#cc',
     '#live-cam','.popover'
   ];
@@ -985,8 +976,9 @@ function switchCam(el){
         el.style.pointerEvents=visible?'':'none';
       });
     });
+    // go-down button: show only on map, use class so z-index isn't overridden
     const btn=document.getElementById('go-down');
-    if(btn){btn.style.opacity=visible?'':'0';btn.style.pointerEvents=visible?'':'none';}
+    if(btn) btn.classList.toggle('map-gone', !visible);
   }
   function check(){
     setMapUI(window.scrollY < window.innerHeight*0.9);
@@ -1011,7 +1003,7 @@ mapboxgl.accessToken='pk.eyJ1IjoiZW1tYWh1MjAwNjAxMzEiLCJhIjoiY21vNm8xMG5sMjN3djJ
 map=new mapboxgl.Map({
   container:'map',
   style:'mapbox://styles/emmahu20060131/cmodwrtal000t01sl8df9h15b?fresh=true',
-  center:[123,18],zoom:3.2,projection:'globe'
+  center:[123,25],zoom:2.2,projection:'globe'
 });
 map.addControl(new mapboxgl.NavigationControl({showCompass:false}),'top-right');
 
@@ -1167,11 +1159,12 @@ document.getElementById('f-datetime').value=new Date().toISOString().slice(0,16)
   </div>
 
   <div class="il-header">
-    <p class="il-eyebrow">Field Identification · 野外识别</p>
-    <h2 class="il-title">Two Species, <em>One Fate</em></h2>
+    <p class="il-eyebrow">Field Identification <span class="zh">野外识别</span></p>
+    <h2 class="il-title">Two Species, <em>One Fate</em><span class="zh-block" style="font-size:0.45em;margin-top:0.2em">两个物种，同一命运</span></h2>
     <p class="il-subtitle">
       Hover over the illustration to reveal field marks<br>
       and distinguish the Critically Endangered from its common relative
+      <span class="zh-block">悬停于插画上揭示野外识别特征，区分极危物种与其常见近亲</span>
     </p>
     <div class="il-sep"><span>·</span></div>
   </div>
@@ -1293,7 +1286,130 @@ document.getElementById('f-datetime').value=new Date().toISOString().slice(0,16)
   <p class="il-caption">
     Watercolour illustration · <em>Thalasseus bernsteini</em> (foreground) &amp; <em>Thalasseus bergii</em> (background)<br>
     Hover over the golden markers to reveal identification notes
+    <span class="zh-block">水彩插画 · 悬停金色标记点以查看识别注释</span>
   </p>
+
+  <!-- Dock buttons live here in section 2 -->
+  <div id="dock">
+    <div class="dock-btn" id="btn-painting" onclick="togglePop('pop-painting')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 17l4-4 4 4 4-5 4 5"/></svg>
+      <span class="dock-tooltip">Watercolour illustration</span>
+    </div>
+    <div class="dock-btn" id="btn-species" onclick="togglePop('pop-species')">
+      <svg viewBox="0 0 24 24"><path d="M2 12c0 0 3-4 7-4c2 0 3 1 5 1c2 0 4-2 6-1c-1 2-3 4-5 4c-2 0-3-1-5-1c-2 0-4 2-4 2z"/><path d="M9 8c0-2 1-4 3-4s3 2 3 4"/></svg>
+      <span class="dock-tooltip">Species profile</span>
+    </div>
+    <div class="dock-btn" id="btn-mca" onclick="togglePop('pop-mca')">
+      <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2.5" fill="white" stroke-width="1.6"/><circle cx="15" cy="12" r="2.5" fill="white" stroke-width="1.6"/><circle cx="10" cy="18" r="2.5" fill="white" stroke-width="1.6"/></svg>
+      <span class="dock-tooltip">Suitability model (MCA)</span>
+    </div>
+    <div class="dock-btn" id="btn-mangrove" onclick="togglePop('pop-mangrove')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 3 2 5 4 6v5h6v-5c2-1 4-3 4-6 0-4-3-7-7-7z"/></svg>
+      <span class="dock-tooltip">Mangrove loss timeline</span>
+    </div>
+    <div class="dock-btn" id="btn-platform" onclick="togglePop('pop-platform')">
+      <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="4" rx="1"/><path d="M7 10V7M12 10V6M17 10V7"/><path d="M4 14c0 2 1 4 2 4M20 14c0 2-1 4-2 4M12 14v6"/><line x1="8" y1="20" x2="16" y2="20"/></svg>
+      <span class="dock-tooltip">About floating platforms</span>
+    </div>
+    <div class="dock-btn" id="btn-layers" onclick="togglePop('pop-layers')">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 22 8.5 12 15 2 8.5"/><polyline points="2 15.5 12 22 22 15.5"/><polyline points="2 12 12 18.5 22 12"/></svg>
+      <span class="dock-tooltip">Map layers</span>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 3 — Visual Novel
+══════════════════════════════════════════════════ -->
+<section id="novel-section" style="
+  position:relative;
+  background:#0e0e0c;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:90px 32px 72px;
+  overflow:hidden;
+">
+  <!-- Ink-wash bg blobs same palette as game -->
+  <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+    <div style="position:absolute;width:600px;height:380px;top:-8%;right:-8%;border-radius:50%;
+      filter:blur(100px);background:radial-gradient(ellipse,rgba(168,200,176,0.07),transparent 70%)"></div>
+    <div style="position:absolute;width:500px;height:320px;bottom:-5%;left:-6%;border-radius:50%;
+      filter:blur(100px);background:radial-gradient(ellipse,rgba(154,176,200,0.06),transparent 70%)"></div>
+  </div>
+
+  <!-- eyebrow + title -->
+  <p style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;
+     color:rgba(168,200,176,0.5);margin-bottom:12px;position:relative;z-index:2">
+    03 · Visual Novel · Science Narrative
+  </p>
+  <h2 style="font-family:'EB Garamond',Georgia,serif;font-size:clamp(2rem,5vw,4rem);font-style:italic;
+     color:rgba(245,240,232,0.92);line-height:1.05;text-align:center;margin-bottom:8px;position:relative;z-index:2">
+    Island No. 5
+  </h2>
+  <p style="font-family:'Noto Serif SC',serif;font-size:clamp(0.85rem,1.6vw,1.1rem);
+     color:rgba(245,240,232,0.22);margin-bottom:10px;letter-spacing:0.14em;position:relative;z-index:2">
+    五 号 岛
+  </p>
+
+  <!-- tension badges -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;position:relative;z-index:2">
+    <span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+      padding:4px 12px;border:0.5px solid rgba(154,176,200,0.3);color:rgba(154,176,200,0.7)">Telemetry Science</span>
+    <span style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(200,195,185,0.3);padding:2px 0">×</span>
+    <span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+      padding:4px 12px;border:0.5px solid rgba(168,200,176,0.3);color:rgba(168,200,176,0.7)">Player Choice</span>
+    <span style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(200,195,185,0.3);padding:2px 0">+</span>
+    <span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+      padding:4px 12px;border:0.5px solid rgba(154,176,200,0.3);color:rgba(154,176,200,0.7)">Conservation Stakes</span>
+  </div>
+
+  <!-- mini scene preview card -->
+  <div style="position:relative;z-index:2;width:min(560px,88vw);margin-bottom:32px;
+    border:0.5px solid rgba(255,255,255,0.08);background:rgba(10,10,8,0.75);backdrop-filter:blur(6px)">
+    <div style="display:flex;align-items:center;justify-content:space-between;
+      padding:8px 14px;border-bottom:0.5px solid rgba(168,200,176,0.1);background:rgba(0,0,0,0.2)">
+      <span style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(168,200,176,0.4)">Preview · Demo</span>
+      <span style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;color:rgba(245,240,232,0.18)">Ch.1 · Island No.5 · 五号岛</span>
+    </div>
+    <div style="height:150px;background:linear-gradient(160deg,rgba(8,22,30,0.96),rgba(20,45,55,0.9));
+      display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(157,195,204,0.07),transparent 70%)"></div>
+      <div style="text-align:center;position:relative;z-index:1;padding:0 24px">
+        <p style="font-family:'EB Garamond',Georgia,serif;font-size:15px;font-style:italic;
+          color:rgba(245,240,232,0.52);line-height:1.7">
+          "Island No. 5 — a remote rocky outcrop in the Zhoushan Archipelago.<br>
+          One of only three confirmed breeding sites for <em>Thalasseus bernsteini.</em>"
+        </p>
+        <p style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;
+          color:rgba(168,200,176,0.5);margin-top:12px">Field Log · 野外记录</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;justify-content:center;padding:10px;border-top:0.5px solid rgba(168,200,176,0.07)">
+      <div style="width:5px;height:5px;border-radius:50%;background:rgba(168,200,176,0.25)"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:rgba(168,200,176,0.25)"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:rgba(168,200,176,0.55)"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.08)"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.08)"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.08)"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.08)"></div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative;z-index:2">
+    <a href="project-00.html" style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;
+      text-transform:uppercase;color:rgba(245,240,232,0.9);border:0.5px solid rgba(168,200,176,0.45);
+      padding:13px 32px;cursor:pointer;text-decoration:none;
+      background:rgba(75,105,85,0.18);transition:all 0.22s">
+      Play the Demo · 开始游玩
+    </a>
+    <a href="index.html" style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;
+      text-transform:uppercase;color:rgba(245,240,232,0.35);border:0.5px solid rgba(255,255,255,0.1);
+      padding:13px 28px;cursor:pointer;text-decoration:none;transition:all 0.22s">
+      ← Back to Map
+    </a>
+  </div>
 </section>
 
 <script>
