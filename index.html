@@ -372,20 +372,41 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 }
 
 /* ── SCROLL DOWN HINT ── */
-#scroll-hint{
-  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  z-index:195;display:flex;flex-direction:column;align-items:center;gap:5px;
-  pointer-events:none;
-  animation:sh-show 1s ease 2s both, sh-hide 1s ease 6s both;
+#go-down{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%);
+  z-index:195;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  cursor:pointer;border:none;background:none;padding:8px 18px;
+  animation:gd-in 1s ease 2.2s both;
+  transition:opacity 0.3s;
 }
-@keyframes sh-show{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-@keyframes sh-hide{from{opacity:1}to{opacity:0;pointer-events:none}}
-.sh-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.16em;
-  text-transform:uppercase;color:rgba(243,236,224,0.45);text-shadow:0 1px 4px rgba(0,0,0,0.6)}
-.sh-chevron{width:16px;height:16px;border-right:1.5px solid rgba(243,236,224,0.3);
-  border-bottom:1.5px solid rgba(243,236,224,0.3);transform:rotate(45deg);
-  animation:sh-bob 1.4s ease-in-out infinite}
-@keyframes sh-bob{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(4px)}}
+#go-down.hidden{opacity:0;pointer-events:none}
+@keyframes gd-in{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.gd-label{
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.18em;
+  text-transform:uppercase;color:rgba(243,236,224,0.5);
+  text-shadow:0 1px 5px rgba(0,0,0,0.7);white-space:nowrap;
+}
+.gd-ring{
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid rgba(243,236,224,0.22);
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(11,20,24,0.45);backdrop-filter:blur(8px);
+  box-shadow:0 2px 16px rgba(0,0,0,0.35);
+  transition:border-color 0.2s,background 0.2s;
+  animation:gd-bob 2s ease-in-out infinite;
+}
+#go-down:hover .gd-ring{
+  border-color:rgba(196,154,82,0.6);
+  background:rgba(45,90,101,0.55);
+}
+@keyframes gd-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.gd-arrow{
+  width:10px;height:10px;
+  border-right:1.5px solid rgba(243,236,224,0.65);
+  border-bottom:1.5px solid rgba(243,236,224,0.65);
+  transform:rotate(45deg) translate(-2px,-2px);
+}
 
 /* ── ILLUSTRATION SECTION ── */
 #illustration-section{
@@ -534,12 +555,13 @@ video.lc-feed-img{animation:none;transform:scale(1.02)}
 <!-- ══ FULL-SCREEN MAP ══ -->
 <div id="map-section">
 <div id="map"></div>
-<!-- scroll hint fades in then out automatically -->
-<div id="scroll-hint">
-  <span class="sh-label">Scroll to explore</span>
-  <div class="sh-chevron"></div>
 </div>
-</div>
+
+<!-- clickable jump button — avoids Mapbox scroll conflict entirely -->
+<button id="go-down" onclick="document.getElementById('illustration-section').scrollIntoView({behavior:'smooth'});this.classList.add('hidden')" aria-label="View field illustration">
+  <span class="gd-label">Field Illustration ↓</span>
+  <div class="gd-ring"><div class="gd-arrow"></div></div>
+</button>
 
 <!-- ══ FAKE LIVE STREAM — Island No.5 Nest Cam ══ -->
 <div id="live-cam">
@@ -946,6 +968,32 @@ function switchCam(el){
     document.querySelector('.lc-loc').textContent=el.dataset.loc;
   },350);
 }
+
+/* ══ Hide map-only UI when scrolled past the map section ══ */
+(function(){
+  const MAP_UI=[
+    '#alert-banner','#logo','#dock',
+    '#panel-sighting','#migration-legend','#cc',
+    '#live-cam','.popover'
+  ];
+  function setMapUI(visible){
+    MAP_UI.forEach(sel=>{
+      document.querySelectorAll(sel).forEach(el=>{
+        el.style.transition='opacity 0.35s, visibility 0.35s';
+        el.style.opacity   =visible?'':'0';
+        el.style.visibility=visible?'':'hidden';
+        el.style.pointerEvents=visible?'':'none';
+      });
+    });
+    const btn=document.getElementById('go-down');
+    if(btn){btn.style.opacity=visible?'':'0';btn.style.pointerEvents=visible?'':'none';}
+  }
+  function check(){
+    setMapUI(window.scrollY < window.innerHeight*0.9);
+  }
+  window.addEventListener('scroll',check,{passive:true});
+  check();
+})();
 </script>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
